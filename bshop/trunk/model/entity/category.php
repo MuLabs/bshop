@@ -239,6 +239,71 @@ class Category extends Kernel\Model\Entity
     }
 
     /**
+     * @return Category[]
+     */
+    public function getAllProducts() {
+        $key = __FUNCTION__;
+        if (!isset($this->_cache[$key])) {
+            $this->_cache[$key] = $this->getApp()->getProductManager()->getFromCategory($this);
+        }
+
+        return $this->_cache[$key];
+    }
+
+    /**
+     * @return Attribute[]
+     */
+    public function getAllAttributes() {
+        $sql = 'SELECT :attribute.idAttribute
+                  FROM @attribute
+                  WHERE :attribute.idCategory = ?';
+
+        $query = new Kernel\Db\Query($sql, array(
+            $this->getId(),
+        ), $this->getManager());
+        $handler = $this->getApp()->getDatabase()->getHandler('readFront');
+        $result = $handler->sendQuery($query);
+
+        return $this->getApp()->getAttributeManager()->multiGet($result->fetchAllValue());
+    }
+
+    /**
+     * @param Attribute $attribute
+     * @param bool $filterable
+     * @param bool $discriminating
+     */
+    public function addAttribute(Attribute $attribute, $filterable, $discriminating) {
+        $sql = 'REPLACE INTO @attribute (:attribute.idAttribute, :attribute.idCategory, :attribute.filterable, :attribute.discriminating)
+				VALUES (?, ?, ?, ?)';
+
+        $query = new Kernel\Db\Query($sql, array(
+            $attribute->getId(),
+            $this->getId(),
+            $filterable,
+            $discriminating,
+        ), $this->getManager());
+        $handler = $this->getApp()->getDatabase()->getHandler('writeFront');
+        $handler->sendQuery($query);
+    }
+
+    /**
+     * @param Attribute $attribute
+     */
+    public function removeAttribute(Attribute $attribute) {
+        $sql = 'DELETE FROM @attribute
+                  WHERE :attribute.idAttribute = ?
+                  AND :attribute.idCategory = ?
+                  LIMIT 1';
+
+        $query = new Kernel\Db\Query($sql, array(
+            $attribute->getId(),
+            $this->getId(),
+        ), $this->getManager());
+        $handler = $this->getApp()->getDatabase()->getHandler('writeFront');
+        $handler->sendQuery($query);
+    }
+
+    /**
      * @return array|string
      */
     public function jsonSerialize()

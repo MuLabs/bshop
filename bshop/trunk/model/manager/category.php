@@ -449,20 +449,30 @@ class Category extends Kernel\Model\Manager
         $className = $this->getEntityClassname();
         call_user_func($stdOut, $className . ' => Generating Datas');
 
+        $parentCat = $this->create(array(
+            'name' => 'Vêtements',
+        ));
+        $attrBrand = $this->getApp()->getAttributeManager()->getFromName('marque');
+        $attrColor = $this->getApp()->getAttributeManager()->getFromName('couleur');
         $toCreate = array(
             array(
+                'parent' => $parentCat,
                 'name' => 'Chaussures',
             ),
             array(
+                'parent' => $parentCat,
                 'name' => 'T-Shirts',
             ),
             array(
+                'parent' => $parentCat,
                 'name' => 'Pantalons',
             ),
         );
 
         foreach ($toCreate as $one) {
-            $this->create($one);
+            $category = $this->create($one);
+            $category->addAttribute($attrBrand, true, false);
+            $category->addAttribute($attrColor, true, false);
         }
 
         return true;

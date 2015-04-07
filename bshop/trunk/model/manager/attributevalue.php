@@ -227,6 +227,30 @@ class AttributeValue extends Kernel\Model\Manager
     }
 
     /**
+     * @param Bundle\Bshop\Model\Entity\Attribute $attribute
+     * @return Bundle\Bshop\Model\Entity\AttributeValue[]
+     */
+    public function getFromAttribute(Bundle\Bshop\Model\Entity\Attribute $attribute) {
+        $where = array(':idAttribute = ?');
+        $whereVal = array($attribute->getId());
+
+        $where = implode(' AND ', $where);
+        if (!empty($where)) {
+            $where = ' WHERE '.$where;
+        }
+
+        $handler = $this->getApp()->getDatabase()->getHandler('readFront');
+        $sql = 'SELECT :id
+                  FROM @ '.$where;
+
+        $query = new Kernel\Db\Query($sql, $whereVal, $this);
+        $result = $handler->sendQuery($query);
+        return $this->multiGet($result->fetchAllValue());
+
+
+    }
+
+    /**
      * @param mixed $id
      * @return Bundle\Bshop\Model\Entity\AttributeValue
      */
@@ -244,7 +268,7 @@ class AttributeValue extends Kernel\Model\Manager
         $className = $this->getEntityClassname();
         call_user_func($stdOut, $className . ' => Generating Datas');
 
-        $attribute = $this->getApp()->getAttributeManager()->getByName('marque');
+        $attribute = $this->getApp()->getAttributeManager()->getFromNameRewritten('marque');
         $toCreate = array(
             array(
                 'attribute' => $attribute,
@@ -257,6 +281,26 @@ class AttributeValue extends Kernel\Model\Manager
             array(
                 'attribute' => $attribute,
                 'value' => 'Puma',
+            ),
+        );
+
+        foreach ($toCreate as $one) {
+            $this->create($one);
+        }
+
+        $attribute = $this->getApp()->getAttributeManager()->getFromNameRewritten('couleur');
+        $toCreate = array(
+            array(
+                'attribute' => $attribute,
+                'value' => 'Rouge',
+            ),
+            array(
+                'attribute' => $attribute,
+                'value' => 'Vert',
+            ),
+            array(
+                'attribute' => $attribute,
+                'value' => 'Bleu',
             ),
         );
 

@@ -99,6 +99,18 @@ class Attribute extends Kernel\Model\Entity
     }
 
     /**
+     * @return Bundle\Bshop\Model\Entity\AttributeValue[]
+     */
+    public function getAvailableValues() {
+        $key = __FUNCTION__;
+        if (!isset($this->_cache[$key])) {
+            $this->_cache[$key] = $this->getApp()->getAttributeValueManager()->getFromAttribute($this);
+        }
+
+        return $this->_cache[$key];
+    }
+
+    /**
      * @return array|string
      */
     public function jsonSerialize()

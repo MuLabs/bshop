@@ -319,6 +319,28 @@ class Product extends Kernel\Model\Manager
     }
 
     /**
+     * @param Bundle\Bshop\Model\Entity\Category $category
+     * @return Bundle\Bshop\Model\Entity\Product[]
+     */
+    public function getFromCategory(Bundle\Bshop\Model\Entity\Category $category) {
+        $where = array(':idCategory = ?');
+        $whereVal = array($category->getId());
+
+        $where = implode(' AND ', $where);
+        if (!empty($where)) {
+            $where = ' WHERE '.$where;
+        }
+
+        $handler = $this->getApp()->getDatabase()->getHandler('readFront');
+        $sql = 'SELECT :id
+                  FROM @ '.$where;
+
+        $query = new Kernel\Db\Query($sql, $whereVal, $this);
+        $result = $handler->sendQuery($query);
+        return $this->multiGet($result->fetchAllValue());
+    }
+
+    /**
      * @param mixed $id
      * @return Bundle\Bshop\Model\Entity\Product
      */
@@ -333,6 +355,25 @@ class Product extends Kernel\Model\Manager
      */
     public function createDefaultDataSet($stdOut = '\print')
     {
+        $categoryList = $this->getApp()->getCategoryManager()->getAll();
+        $categoryCount = count($categoryList);
 
+        $limit = 50;
+        for ($i = 0; $i < $limit; ++$i) {
+            $product = $this->create(array(
+                'category' => $categoryList[rand(1, $categoryCount)],
+                'name' => 'product'.rand(0, 10000),
+            ));
+
+            $attrList = $product->getCategory()->getAllAttributes();
+            foreach ($attrList as $oneAttribute) {
+                $attrValues = $oneAttribute->getAvailableValues();
+                shuffle($attrValues);
+                $countAttrValues = count($attrValues);
+                if ($countAttrValues) {
+                    $product->addAttributeValue($attrValues[rand(0, $countAttrValues-1)]);
+                }
+            }
+        }
     }
 }
