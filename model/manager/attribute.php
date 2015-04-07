@@ -212,10 +212,10 @@ class Attribute extends Kernel\Model\Manager
     /**
      *
      * @param string $name
-     * @return Bundle\Bshop\Model\Entity\Attribute[]
+     * @return Bundle\Bshop\Model\Entity\Attribute
      */
-    public function getByName($name) {
-        $where[] = 'name = ?';
+    public function getFromName($name) {
+        $where[] = ':name = ?';
         $whereVal[] = $name;
         $where = implode(' AND ', $where);
 
@@ -304,8 +304,13 @@ class Attribute extends Kernel\Model\Manager
 
         $toCreate = array(
             array(
-                'name' => 'marque',
+                'name' => 'Marque',
                 'nameRewritten' => 'marque',
+                'type' => self::TYPE_STRING,
+            ),
+            array(
+                'name' => 'Couleur',
+                'nameRewritten' => 'couleur',
                 'type' => self::TYPE_STRING,
             )
         );

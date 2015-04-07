@@ -182,6 +182,55 @@ class Product extends Kernel\Model\Entity
     }
 
     /**
+     * @return Attribute[]
+     */
+    public function getAllAttributeValues() {
+        $sql = 'SELECT :attributeValue.idAttributeValue
+                  FROM @attributeValue
+                  WHERE :attributeValue.idProduct = ?';
+
+        $query = new Kernel\Db\Query($sql, array(
+            $this->getId(),
+        ), $this->getManager());
+        $handler = $this->getApp()->getDatabase()->getHandler('readFront');
+        $result = $handler->sendQuery($query);
+
+        return $this->getApp()->getAttributeValueManager()->multiGet($result->fetchAllValue());
+    }
+
+    /**
+     * @param AttributeValue $attributeValue
+     */
+    public function addAttributeValue(AttributeValue $attributeValue) {
+        $sql = 'REPLACE INTO @attributeValue (:attributeValue.idAttributeValue, :attributeValue.idProduct)
+				VALUES (?, ?)';
+
+        $query = new Kernel\Db\Query($sql, array(
+            $attributeValue->getId(),
+            $this->getId(),
+        ), $this->getManager());
+        $handler = $this->getApp()->getDatabase()->getHandler('writeFront');
+        $handler->sendQuery($query);
+    }
+
+    /**
+     * @param AttributeValue $attributeValue
+     */
+    public function removeAttributeValue(AttributeValue $attributeValue) {
+        $sql = 'DELETE FROM @attributeValue
+                  WHERE :attributeValue.idAttributeValue = ?
+                  AND :attributeValue.idProduct = ?
+                  LIMIT 1';
+
+        $query = new Kernel\Db\Query($sql, array(
+            $attributeValue->getId(),
+            $this->getId(),
+        ), $this->getManager());
+        $handler = $this->getApp()->getDatabase()->getHandler('writeFront');
+        $handler->sendQuery($query);
+    }
+
+    /**
      * @return array|string
      */
     public function jsonSerialize()
