@@ -239,7 +239,7 @@ class Category extends Kernel\Model\Entity
     }
 
     /**
-     * @return Category[]
+     * @return Product[]
      */
     public function getAllProducts() {
         $key = __FUNCTION__;
@@ -301,6 +301,50 @@ class Category extends Kernel\Model\Entity
         ), $this->getManager());
         $handler = $this->getApp()->getDatabase()->getHandler('writeFront');
         $handler->sendQuery($query);
+    }
+
+    /**
+     * @param int $page
+     * @return Bundle\Bshop\Model\Entity\Product[]
+     */
+
+    public function getAllProductsFromThisAndChild($page) {
+
+        $catManager = $this->getManager();
+        $productManager = $this->getApp()->getProductManager();
+
+        $whereVal = array();
+
+        $whereVal[] = $this->getId();
+        $arbo = $catManager->getFullCategoryArbo($this);
+
+        foreach ($arbo as $i=>$categorie) {
+            $whereVal[] = $categorie['id'];
+        }
+
+        $where = implode(', ', array_fill(0, count($whereVal), '?'));
+        $whereCol = ':idCategory IN ('.$where.')';
+
+        $rowNumber = 10;
+        $numberByRow = 5 ;
+
+        $numberProduct = $rowNumber*$numberByRow;
+
+        $orderBy = ' ORDER BY :name';
+        $orderType = ' ASC ';
+
+        $selectedProduct = $orderBy.$orderType.' LIMIT '.$numberProduct.' OFFSET '.(($page-1)*$numberProduct);
+
+        $handler = $this->getApp()->getDatabase()->getHandler('readFront');
+        $sql = 'SELECT :id
+            FROM @ product
+            WHERE ' . $whereCol . $selectedProduct;
+
+        $query = new Kernel\Db\Query($sql, $whereVal, $productManager);
+        $result = $handler->sendQuery($query);
+
+        return $productManager->multiGet($result->fetchAllValue());
+
     }
 
     /**

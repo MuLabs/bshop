@@ -175,7 +175,7 @@ class Product extends Kernel\Model\Manager
                 'idAttributeValue' => array(
                     'title' => 'ID AttributeValue',
                     'database' => array(
-                        'attribute' => 'idAttribute',
+                        'attribute' => 'idAttributeValue',
                         'pdo_extra' => 'UNSIGNED NOT NULL',
                         'type' => 'smallint',
                     ),
@@ -323,6 +323,7 @@ class Product extends Kernel\Model\Manager
      * @return Bundle\Bshop\Model\Entity\Product[]
      */
     public function getFromCategory(Bundle\Bshop\Model\Entity\Category $category) {
+
         $where = array(':idCategory = ?');
         $whereVal = array($category->getId());
 
@@ -339,6 +340,7 @@ class Product extends Kernel\Model\Manager
         $result = $handler->sendQuery($query);
         return $this->multiGet($result->fetchAllValue());
     }
+
 
     /**
      * @param mixed $id
@@ -375,5 +377,24 @@ class Product extends Kernel\Model\Manager
                 }
             }
         }
+    }
+    /**
+     * @param $nameRewritten
+     * @return Bundle\Bshop\Model\Entity\Product
+     */
+    public function getFromNameRewritten($nameRewritten)
+    {
+        $handler = $this->getApp()->getDatabase()->getHandler('readFront');
+        $sql = 'SELECT :id
+				FROM @
+				WHERE :nameRewritten = ?
+				AND :deleted = 0
+				LIMIT 1;';
+        $query = new Kernel\Db\Query($sql, array($nameRewritten), $this);
+        $result = $handler->sendQuery($query);
+
+        list($idProduct) = $result->fetchRow();
+
+        return $this->get($idProduct);
     }
 }

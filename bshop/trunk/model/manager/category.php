@@ -388,9 +388,9 @@ class Category extends Kernel\Model\Manager
      * @param Bundle\Bshop\Model\Entity\Category $parent
      * @param array $arbo
      * @param int $level
-     * @return mixed
+     * @return array()
      */
-    public function getFullCategoryArbo(Bundle\Bshop\Model\Entity\Category $parent = null, $arbo = array(), $level = 0)
+    public function getFullCategoryArbo(Bundle\Bshop\Model\Entity\Category $parent = null, $level = 0, $arbo = array() )
     {
         $idParent = ($parent) ? $parent->getId() : 0;
         $key = 'categories|arbo|' . $idParent . '|' . $level;
@@ -402,10 +402,13 @@ class Category extends Kernel\Model\Manager
             foreach ($categories as $category) {
                 $arbo[] = array(
                     'id' => $category->getId(),
-                    'name' => str_repeat('--', $level - 1) . ' ' . $category->getName(),
+                    'name' => $category->getName(),
+                    'parent' => $idParent,
+                    'nameRewritten' => $category->getNameRewritten(),
+                    'level' => $level,
                 );
 
-                $arbo = $this->getFullCategoryArbo($category, $arbo, $level);
+                $arbo = $this->getFullCategoryArbo($category,  $level, $arbo);
             }
 
             $this->_cache[$key] = $arbo;
