@@ -182,7 +182,7 @@ class Product extends Kernel\Model\Entity
     }
 
     /**
-     * @return Attribute[]
+     * @return AttributeValue[]
      */
     public function getAllAttributeValues() {
         $sql = 'SELECT :attributeValue.idAttributeValue
@@ -262,5 +262,25 @@ class Product extends Kernel\Model\Entity
      */
     public function getManager() {
         return parent::getManager();
+    }
+
+    public function getAttributesAndValues() {
+
+        $values = $this->getAllAttributeValues();
+
+        $props= array();
+
+        foreach ($values as $value) {
+            $attribute = $value->getAttribute();
+            $propName = $attribute->getName();
+            $propValue = $value->getValue();
+
+            $props[] = array(
+                'name' => $propName,
+                'value' => $propValue
+            );
+        }
+
+        return $props;
     }
 }
